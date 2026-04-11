@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import pickle
+import joblib
 import plotly.graph_objects as go
 
 # -------------------------
@@ -36,8 +36,8 @@ st.title('📊 Customer Churn Prediction System')
 # -------------------------
 @st.cache_resource
 def load_model():
-    with open('best_churn_model.pkl', 'rb') as file:
-        return pickle.load(file)
+    return joblib.load("best_churn_model.pkl")
+
 
 model_data = load_model()
 model = model_data["model"]
@@ -61,7 +61,7 @@ with col2:
 
 
 # -------------------------
-# Prediction Button
+# Prediction
 # -------------------------
 if st.button('Predict Churn'):
 
@@ -92,7 +92,7 @@ if st.button('Predict Churn'):
 
 
     # -------------------------
-    # OUTPUT DASHBOARD
+    # OUTPUT
     # -------------------------
     st.subheader("📊 Risk Analysis Dashboard")
 
