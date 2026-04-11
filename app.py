@@ -119,6 +119,8 @@ if st.button('Predict Churn'):
         - Improve engagement programs  
         - Build long-term loyalty  
         """)
-
+@st.cache_resource
+def load_model():
+    return "test"
     # Gauge chart
     st.plotly_chart(create_gauge(churn_prob / 100), use_container_width=True)
