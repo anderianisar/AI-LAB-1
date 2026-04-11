@@ -1,84 +1,21 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import pickle
-import plotly.graph_objects as go
-
-# Page configuration
-st.set_page_config(
-    page_title='Customer Churn Predictor',
-    page_icon='📊',
-    layout='wide'
-)
-
-# Title
-st.title('📊 Customer Churn Prediction System')
-
-@st.cache_resource
-def load_model():
-    with open('best_churn_model.pkl', 'rb') as file:
-        model = pickle.load(file)
-    return model
-
-model = load_model()
-
-st.success('Model loaded successfully!')
-
 # =============================
-# Input Form
+# Gauge Chart
 # =============================
-col1, col2 = st.columns(2)
+st.subheader("📊 Churn Probability Gauge")
 
-with col1:
-    st.subheader('Customer Demographics')
-    gender = st.selectbox('Gender', ['Male', 'Female'])
-    senior_citizen = st.selectbox('Senior Citizen', ['No', 'Yes'])
-    partner = st.selectbox('Partner', ['No', 'Yes'])
-    dependents = st.selectbox('Dependents', ['No', 'Yes'])
+fig = go.Figure(go.Indicator(
+    mode="gauge+number",
+    value=churn_prob,
+    title={'text': "Churn Risk (%)"},
+    gauge={
+        'axis': {'range': [0, 100]},
+        'bar': {'color': "red"},
+        'steps': [
+            {'range': [0, 40], 'color': "green"},
+            {'range': [40, 70], 'color': "yellow"},
+            {'range': [70, 100], 'color': "red"}
+        ],
+    }
+))
 
-with col2:
-    st.subheader('Account Information')
-    tenure = st.slider('Tenure (months)', 0, 72, 12)
-    monthly_charges = st.number_input(
-        'Monthly Charges ($)',
-        min_value=0.0,
-        max_value=200.0,
-        value=70.0
-    )
-
-    # =============================
-    # Prediction Button
-    # =============================
-    if st.button('Predict Churn', type='primary'):
-
-        input_data = {
-            'gender': gender,
-            'SeniorCitizen': 1 if senior_citizen == 'Yes' else 0,
-            'tenure': tenure,
-            'MonthlyCharges': monthly_charges
-        }
-
-        input_df = pd.DataFrame([input_data])
-
-        # encoding
-        input_encoded = pd.get_dummies(input_df)
-
-        # align columns with model
-        input_encoded = input_encoded.reindex(columns=model.feature_names_in_, fill_value=0)
-
-        # prediction
-        prediction = model.predict(input_encoded)[0]
-        probability = model.predict_proba(input_encoded)[0]
-        churn_prob = probability[1] * 100
-
-        # =============================
-        # RESULT DISPLAY
-        # =============================
-        st.subheader("Prediction Result")
-
-        if prediction == 1:
-            st.error("⚠️ HIGH RISK: Customer likely to churn")
-            st.metric("Churn Probability", f"{churn_prob:.1f}%")
-        else:
-            st.success("✅ LOW RISK: Customer likely to stay")
-            st.metric("Retention Probability", f"{100 - churn_prob:.1f}%")
+st.plotly_chart(fig, use_container_width=True)
